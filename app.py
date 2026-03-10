@@ -21,7 +21,7 @@ st.set_page_config(
     page_title="TTM Squeeze Scanner",
     page_icon="🔵",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # ─── CUSTOM STYLING ───
@@ -165,11 +165,10 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Sidebar styling */
-    section[data-testid="stSidebar"] {
-        background-color: #111827;
-        border-right: 1px solid #1f2937;
-    }
+    /* Hide sidebar completely */
+    section[data-testid="stSidebar"] { display: none !important; }
+    button[data-testid="stSidebarCollapseButton"] { display: none !important; }
+    [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
     /* Table container */
     .results-table {
@@ -402,23 +401,6 @@ def action_badge(r):
         return '<span class="action-watch">—</span>'
 
 
-# ─── SIDEBAR (parameters only) ───
-
-with st.sidebar:
-    st.markdown('<div class="scanner-title">🔵 Settings</div>', unsafe_allow_html=True)
-    st.markdown("---")
-
-    # Squeeze parameters
-    st.markdown("##### Squeeze Parameters")
-    bb_len = st.slider("BB Length", 10, 30, 20)
-    bb_mult = st.slider("BB Multiplier", 1.0, 3.0, 2.0, 0.1)
-    kc_mult = st.slider("KC Multiplier", 1.0, 3.0, 1.5, 0.1)
-
-    st.markdown("---")
-    st.markdown(f'<div class="scanner-subtitle">Last scan: {datetime.now().strftime("%H:%M:%S")}</div>',
-                unsafe_allow_html=True)
-
-
 # ─── PARSE TICKERS ───
 
 def parse_tickers(text):
@@ -474,6 +456,16 @@ with input_col:
 with btn_col:
     st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
     scan_btn = st.button("🔍 SCAN", type="primary", use_container_width=True)
+
+# Squeeze parameters in collapsible section
+with st.expander("⚙️ Squeeze Parameters", expanded=False):
+    p1, p2, p3 = st.columns(3)
+    with p1:
+        bb_len = st.slider("BB Length", 10, 30, 20)
+    with p2:
+        bb_mult = st.slider("BB Multiplier", 1.0, 3.0, 2.0, 0.1)
+    with p3:
+        kc_mult = st.slider("KC Multiplier", 1.0, 3.0, 1.5, 0.1)
 
 # Legend
 st.markdown("""
