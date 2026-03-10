@@ -402,47 +402,10 @@ def action_badge(r):
         return '<span class="action-watch">—</span>'
 
 
-# ─── SIDEBAR ───
+# ─── SIDEBAR (parameters only) ───
 
 with st.sidebar:
-    st.markdown('<div class="scanner-title">🔵 TTM Squeeze</div>', unsafe_allow_html=True)
-    st.markdown('<div class="scanner-subtitle">MULTI-TIMEFRAME SCANNER</div>', unsafe_allow_html=True)
-    st.markdown("---")
-
-    # Ticker input
-    st.markdown("##### Enter Tickers")
-    ticker_input = st.text_area(
-        "One per line or comma-separated",
-        value="AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AMD, NFLX, SPY",
-        height=120,
-        label_visibility="collapsed"
-    )
-
-    st.markdown("---")
-
-    # Presets
-    st.markdown("##### Quick Presets")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🏢 Mega Cap", use_container_width=True):
-            st.session_state.preset = "AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AVGO, BRK-B, JPM"
-    with col2:
-        if st.button("🚀 Growth", use_container_width=True):
-            st.session_state.preset = "PLTR, SOFI, COIN, DKNG, RBLX, SHOP, SNOW, CRWD, NET, ARM"
-
-    col3, col4 = st.columns(2)
-    with col3:
-        if st.button("⚡ Momentum", use_container_width=True):
-            st.session_state.preset = "SMCI, MSTR, MARA, RIOT, COIN, HOOD, SQ, AFRM, UPST, IONQ"
-    with col4:
-        if st.button("📊 ETFs", use_container_width=True):
-            st.session_state.preset = "SPY, QQQ, IWM, DIA, ARKK, XLF, XLE, XLK, SOXX, GLD"
-
-    if 'preset' in st.session_state:
-        ticker_input = st.session_state.preset
-        del st.session_state.preset
-        st.rerun()
-
+    st.markdown('<div class="scanner-title">🔵 Settings</div>', unsafe_allow_html=True)
     st.markdown("---")
 
     # Squeeze parameters
@@ -450,11 +413,6 @@ with st.sidebar:
     bb_len = st.slider("BB Length", 10, 30, 20)
     bb_mult = st.slider("BB Multiplier", 1.0, 3.0, 2.0, 0.1)
     kc_mult = st.slider("KC Multiplier", 1.0, 3.0, 1.5, 0.1)
-
-    st.markdown("---")
-
-    # Scan button
-    scan_btn = st.button("🔍  SCAN NOW", type="primary", use_container_width=True)
 
     st.markdown("---")
     st.markdown(f'<div class="scanner-subtitle">Last scan: {datetime.now().strftime("%H:%M:%S")}</div>',
@@ -478,9 +436,48 @@ st.markdown('<div class="scanner-title">TTM Squeeze Scanner</div>', unsafe_allow
 st.markdown(f'<div class="scanner-subtitle">DAILY · 4H · 1H · 30MIN · 10MIN · 5MIN &nbsp;&nbsp;|&nbsp;&nbsp; {datetime.now().strftime("%Y-%m-%d %H:%M")}</div>', unsafe_allow_html=True)
 st.markdown("")
 
+# ─── TICKER INPUT + PRESETS + SCAN (always visible on main page) ───
+
+# Initialize ticker text in session state
+if 'ticker_text' not in st.session_state:
+    st.session_state.ticker_text = "AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AMD, NFLX, SPY"
+
+# Preset buttons
+pcol1, pcol2, pcol3, pcol4 = st.columns(4)
+with pcol1:
+    if st.button("🏢 Mega Cap", use_container_width=True):
+        st.session_state.ticker_text = "AAPL, MSFT, GOOGL, AMZN, NVDA, META, TSLA, AVGO, BRK-B, JPM"
+        st.rerun()
+with pcol2:
+    if st.button("🚀 Growth", use_container_width=True):
+        st.session_state.ticker_text = "PLTR, SOFI, COIN, DKNG, RBLX, SHOP, SNOW, CRWD, NET, ARM"
+        st.rerun()
+with pcol3:
+    if st.button("⚡ Momentum", use_container_width=True):
+        st.session_state.ticker_text = "SMCI, MSTR, MARA, RIOT, COIN, HOOD, SQ, AFRM, UPST, IONQ"
+        st.rerun()
+with pcol4:
+    if st.button("📊 ETFs", use_container_width=True):
+        st.session_state.ticker_text = "SPY, QQQ, IWM, DIA, ARKK, XLF, XLE, XLK, SOXX, GLD"
+        st.rerun()
+
+# Ticker input + scan button on same row
+input_col, btn_col = st.columns([4, 1])
+with input_col:
+    ticker_input = st.text_area(
+        "Enter tickers (comma-separated)",
+        value=st.session_state.ticker_text,
+        height=68,
+        label_visibility="collapsed",
+        placeholder="AAPL, TSLA, NVDA..."
+    )
+with btn_col:
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+    scan_btn = st.button("🔍 SCAN", type="primary", use_container_width=True)
+
 # Legend
 st.markdown("""
-<div style="display:flex; gap:16px; flex-wrap:wrap; margin-bottom:1rem;">
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin:0.5rem 0 1rem 0;">
     <span class="sq-on">CYAN = Squeeze ON</span>
     <span class="sq-fired">ORANGE = Just Fired</span>
     <span class="sq-bullish">GREEN = Bullish Squeeze</span>
@@ -644,15 +641,10 @@ if 'results' in st.session_state:
             st.info("No bullish candidates found in this scan.")
 
 else:
-    # No results yet — show instructions
     st.markdown("""
-    <div style="text-align:center; padding:4rem 2rem; color:#6b7280;">
-        <div style="font-size:3rem; margin-bottom:1rem;">🔵</div>
-        <div style="font-family:Outfit; font-size:1.3rem; color:#e5e7eb; margin-bottom:0.5rem;">
-            Enter your tickers and hit SCAN NOW
-        </div>
-        <div style="font-family:JetBrains Mono; font-size:0.8rem;">
-            Uses Yahoo Finance · All 6 timeframes · Free & unlimited
+    <div style="text-align:center; padding:3rem 2rem; color:#6b7280;">
+        <div style="font-family:JetBrains Mono; font-size:0.85rem;">
+            ↑ &nbsp; Enter tickers above and hit SCAN &nbsp; ↑
         </div>
     </div>
     """, unsafe_allow_html=True)
